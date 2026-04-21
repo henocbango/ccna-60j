@@ -1,0 +1,1379 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jour 1 – Réseaux, câbles, modèles OSI et TCP</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,400;0,600;0,700;1,300&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #1a1a2e;
+    --ink-light: #4a4a6a;
+    --ink-faint: #8888aa;
+    --page: #faf9f6;
+    --accent: #2563eb;
+    --accent-soft: #dbeafe;
+    --accent-warm: #f59e0b;
+    --accent-warm-soft: #fef3c7;
+    --accent-green: #059669;
+    --accent-green-soft: #d1fae5;
+    --rule: #e2e0d8;
+    --code-bg: #1e1e3f;
+    --code-text: #a9b7d3;
+    --card-bg: #ffffff;
+    --sidebar: #f0ede6;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 300;
+    background: var(--page);
+    color: var(--ink);
+    font-size: 16px;
+    line-height: 1.75;
+  }
+
+  /* ── HEADER ── */
+  .course-header {
+    background: var(--ink);
+    color: #fff;
+    padding: 3.5rem 2rem 3rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .course-header::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 30% 60%, #2563eb33 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 20%, #f59e0b22 0%, transparent 50%);
+  }
+  .course-header .badge {
+    display: inline-block;
+    font-family: 'DM Mono', monospace;
+    font-size: .7rem;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    color: var(--accent-warm);
+    border: 1px solid var(--accent-warm);
+    padding: .25rem .75rem;
+    border-radius: 2rem;
+    margin-bottom: 1.25rem;
+    position: relative;
+  }
+  .course-header h1 {
+    font-family: 'Fraunces', serif;
+    font-size: clamp(1.8rem, 4vw, 2.8rem);
+    font-weight: 700;
+    line-height: 1.15;
+    position: relative;
+    letter-spacing: -.01em;
+  }
+  .course-header p {
+    margin-top: .75rem;
+    color: #9ca3af;
+    font-size: .9rem;
+    position: relative;
+  }
+
+  /* ── LAYOUT ── */
+  .wrapper {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 0 1.5rem 6rem;
+  }
+
+  /* ── OBJECTIVES BOX ── */
+  .objectives {
+    background: var(--card-bg);
+    border: 1px solid var(--rule);
+    border-radius: 12px;
+    padding: 2rem 2.25rem;
+    margin: 3rem 0 2.5rem;
+    box-shadow: 0 1px 6px rgba(0,0,0,.05);
+  }
+  .objectives h2 {
+    font-family: 'Fraunces', serif;
+    font-size: 1rem;
+    font-weight: 600;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-bottom: 1.25rem;
+    display: flex; align-items: center; gap: .5rem;
+  }
+  .objectives h2::before { content: '◆'; color: var(--accent-warm); font-size: .65rem; }
+  .tasks-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: .5rem .75rem;
+  }
+  @media(max-width:560px) { .tasks-grid { grid-template-columns: 1fr; } }
+  .task-item {
+    display: flex; align-items: flex-start; gap: .6rem;
+    font-size: .88rem; color: var(--ink-light);
+  }
+  .task-item::before {
+    content: '□';
+    color: var(--accent);
+    flex-shrink: 0;
+    margin-top: .05rem;
+    font-size: 1rem;
+  }
+
+  /* ── MODULE REQS ── */
+  .module-reqs {
+    background: var(--accent-soft);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 8px 8px 0;
+    padding: 1.5rem 2rem;
+    margin: 2rem 0;
+  }
+  .module-reqs h3 {
+    font-family: 'Fraunces', serif;
+    font-size: .85rem;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 1rem;
+  }
+  .module-reqs ul { list-style: none; display: flex; flex-direction: column; gap: .5rem; }
+  .module-reqs li {
+    font-size: .88rem;
+    color: #1d4ed8;
+    display: flex; align-items: flex-start; gap: .6rem;
+  }
+  .module-reqs li::before { content: '→'; flex-shrink: 0; color: var(--accent); font-weight: 600; }
+
+  /* ── SECTION HEADINGS ── */
+  .section-title {
+    font-family: 'Fraunces', serif;
+    font-size: 1.65rem;
+    font-weight: 700;
+    color: var(--ink);
+    margin: 3.5rem 0 1.25rem;
+    padding-bottom: .6rem;
+    border-bottom: 2px solid var(--rule);
+    display: flex; align-items: center; gap: .75rem;
+  }
+  .section-title .num {
+    font-family: 'DM Mono', monospace;
+    font-size: .75rem;
+    color: var(--accent-warm);
+    background: var(--accent-warm-soft);
+    padding: .15rem .55rem;
+    border-radius: 4px;
+    letter-spacing: .06em;
+    font-weight: 500;
+    flex-shrink: 0;
+  }
+
+  .sub-title {
+    font-family: 'Fraunces', serif;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--ink);
+    margin: 2.5rem 0 .85rem;
+  }
+
+  .sub-sub-title {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--ink);
+    margin: 2rem 0 .6rem;
+    letter-spacing: .01em;
+  }
+
+  p { margin-bottom: 1rem; color: var(--ink-light); }
+  p strong { color: var(--ink); font-weight: 500; }
+
+  /* ── CALLOUTS ── */
+  .callout {
+    border-radius: 10px;
+    padding: 1.25rem 1.5rem;
+    margin: 1.5rem 0;
+    font-size: .92rem;
+  }
+  .callout-info { background: var(--accent-soft); border-left: 3px solid var(--accent); }
+  .callout-warn { background: var(--accent-warm-soft); border-left: 3px solid var(--accent-warm); }
+  .callout-tip  { background: var(--accent-green-soft); border-left: 3px solid var(--accent-green); }
+  .callout .callout-label {
+    font-family: 'DM Mono', monospace;
+    font-size: .7rem;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    font-weight: 500;
+    margin-bottom: .4rem;
+  }
+  .callout-info .callout-label { color: var(--accent); }
+  .callout-warn .callout-label { color: #92400e; }
+  .callout-tip  .callout-label { color: var(--accent-green); }
+  .callout p { margin: 0; color: inherit; }
+
+  /* ── OSI TABLE ── */
+  .osi-table { width: 100%; border-collapse: collapse; margin: 1.5rem 0; font-size: .9rem; }
+  .osi-table thead th {
+    background: var(--ink);
+    color: #fff;
+    font-family: 'DM Mono', monospace;
+    font-weight: 400;
+    font-size: .78rem;
+    letter-spacing: .08em;
+    padding: .65rem 1.25rem;
+    text-align: left;
+  }
+  .osi-table tbody tr { border-bottom: 1px solid var(--rule); transition: background .15s; }
+  .osi-table tbody tr:hover { background: var(--accent-soft); }
+  .osi-table tbody td { padding: .7rem 1.25rem; }
+  .osi-table tbody td:first-child {
+    font-family: 'DM Mono', monospace;
+    font-weight: 500;
+    color: var(--accent);
+    font-size: .85rem;
+  }
+  .osi-table tbody td:last-child { color: var(--ink-light); }
+  .layer-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: #fff;
+    font-family: 'DM Mono', monospace;
+    font-size: .75rem;
+    font-weight: 500;
+    flex-shrink: 0;
+  }
+
+  /* ── CODE BLOCKS ── */
+  pre {
+    background: var(--code-bg);
+    color: var(--code-text);
+    font-family: 'DM Mono', monospace;
+    font-size: .8rem;
+    line-height: 1.65;
+    padding: 1.5rem 1.75rem;
+    border-radius: 10px;
+    overflow-x: auto;
+    margin: 1.25rem 0;
+    box-shadow: 0 4px 20px rgba(0,0,0,.2);
+  }
+  pre .prompt { color: #f59e0b; }
+  pre .comment { color: #6272a4; font-style: italic; }
+  code:not(pre code) {
+    font-family: 'DM Mono', monospace;
+    font-size: .82em;
+    background: #e8e6f0;
+    color: #4338ca;
+    padding: .1em .38em;
+    border-radius: 4px;
+  }
+
+  /* ── TOPOLOGY TABLE ── */
+  .topo-table { width: 100%; border-collapse: collapse; margin: 1.25rem 0; font-size: .88rem; }
+  .topo-table thead th {
+    background: var(--sidebar);
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 500;
+    font-size: .8rem;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+    color: var(--ink-light);
+    padding: .6rem 1.1rem;
+    text-align: left;
+    border-bottom: 2px solid var(--rule);
+  }
+  .topo-table tbody tr { border-bottom: 1px solid var(--rule); }
+  .topo-table tbody tr:nth-child(even) { background: var(--sidebar); }
+  .topo-table tbody td { padding: .6rem 1.1rem; color: var(--ink-light); }
+  .topo-table tbody td:first-child { font-weight: 500; color: var(--ink); }
+
+  /* ── PORT TABLE ── */
+  .port-table { width: 100%; border-collapse: collapse; margin: 1.25rem 0; font-size: .85rem; }
+  .port-table thead th {
+    background: var(--ink);
+    color: #fff;
+    font-family: 'DM Mono', monospace;
+    font-weight: 400;
+    font-size: .75rem;
+    letter-spacing: .08em;
+    padding: .55rem 1rem;
+    text-align: left;
+  }
+  .port-table tbody tr { border-bottom: 1px solid var(--rule); }
+  .port-table tbody tr:hover { background: var(--accent-soft); }
+  .port-table tbody td { padding: .55rem 1rem; color: var(--ink-light); }
+  .port-table tbody td:first-child {
+    font-family: 'DM Mono', monospace;
+    color: var(--accent);
+    font-size: .82rem;
+  }
+  .port-table tbody td:last-child {
+    font-family: 'DM Mono', monospace;
+    color: #059669;
+    font-size: .82rem;
+  }
+
+  /* ── SHORTCUT TABLE ── */
+  .shortcut-table { width: 100%; border-collapse: collapse; margin: 1.25rem 0; font-size: .88rem; }
+  .shortcut-table tbody tr { border-bottom: 1px solid var(--rule); }
+  .shortcut-table tbody tr:nth-child(even) { background: var(--sidebar); }
+  .shortcut-table tbody td { padding: .6rem 1rem; }
+  .shortcut-table tbody td:first-child {
+    font-family: 'DM Mono', monospace;
+    color: var(--accent);
+    font-size: .82rem;
+    font-weight: 500;
+    white-space: nowrap;
+    width: 220px;
+  }
+  .shortcut-table tbody td:last-child { color: var(--ink-light); }
+
+  /* ── SHOW CMD TABLE ── */
+  .show-table { width: 100%; border-collapse: collapse; margin: 1.25rem 0; font-size: .88rem; }
+  .show-table thead th {
+    background: var(--sidebar);
+    font-weight: 500; font-size: .8rem;
+    letter-spacing: .05em; text-transform: uppercase;
+    color: var(--ink-light); padding: .6rem 1rem;
+    border-bottom: 2px solid var(--rule); text-align: left;
+  }
+  .show-table tbody tr { border-bottom: 1px solid var(--rule); }
+  .show-table tbody tr:nth-child(even) { background: #fafaf8; }
+  .show-table tbody td { padding: .6rem 1rem; color: var(--ink-light); }
+  .show-table tbody td:first-child { font-family: 'DM Mono', monospace; color: #059669; font-size: .8rem; }
+
+  /* ── ETHERNET TABLE ── */
+  .eth-table { width: 100%; border-collapse: collapse; margin: 1.25rem 0; font-size: .85rem; overflow: hidden; border-radius: 10px; border: 1px solid var(--rule); }
+  .eth-table thead th { background: var(--ink); color: #fff; font-family: 'DM Sans', sans-serif; font-weight: 400; font-size: .78rem; letter-spacing: .06em; text-transform: uppercase; padding: .7rem 1rem; text-align: left; }
+  .eth-table tbody tr { border-bottom: 1px solid var(--rule); }
+  .eth-table tbody tr:hover { background: var(--accent-soft); }
+  .eth-table tbody td { padding: .65rem 1rem; color: var(--ink-light); }
+  .eth-table tbody td:first-child { font-weight: 500; color: var(--accent); font-family: 'DM Mono', monospace; font-size: .8rem; }
+
+  /* ── MODE CARDS ── */
+  .mode-card {
+    background: var(--card-bg);
+    border: 1px solid var(--rule);
+    border-radius: 10px;
+    padding: 1.25rem 1.5rem;
+    margin: 1rem 0;
+    box-shadow: 0 1px 4px rgba(0,0,0,.04);
+  }
+  .mode-card h4 {
+    font-family: 'DM Mono', monospace;
+    font-size: .78rem;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: .6rem;
+  }
+  .mode-card p { margin: 0; font-size: .9rem; }
+
+  /* ── Q&A SECTION ── */
+  .qa-section {
+    background: var(--card-bg);
+    border: 1px solid var(--rule);
+    border-radius: 12px;
+    padding: 2rem 2.25rem;
+    margin: 3rem 0 2rem;
+  }
+  .qa-section h2 {
+    font-family: 'Fraunces', serif;
+    font-size: 1.4rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+  }
+  .qa-section h3 {
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 500;
+    font-size: .85rem;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin: 1.5rem 0 .85rem;
+    padding-bottom: .4rem;
+    border-bottom: 1px solid var(--rule);
+  }
+  .q-item {
+    display: flex; gap: .75rem; align-items: flex-start;
+    padding: .55rem 0;
+    border-bottom: 1px solid var(--rule);
+    font-size: .9rem; color: var(--ink-light);
+  }
+  .q-item:last-child { border-bottom: none; }
+  .q-num {
+    font-family: 'DM Mono', monospace;
+    font-size: .75rem;
+    color: var(--accent);
+    background: var(--accent-soft);
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    margin-top: .1rem;
+  }
+
+  /* ── FOOTER ── */
+  .course-footer {
+    background: var(--ink);
+    color: #9ca3af;
+    text-align: center;
+    padding: 2.5rem 1.5rem;
+    font-size: .85rem;
+    margin-top: 4rem;
+  }
+  .course-footer strong { color: #f59e0b; font-weight: 500; }
+  .course-footer p + p { margin-top: .4rem; }
+
+  /* ── PING OUTPUT ── */
+  .ping-output {
+    background: #0d1117;
+    color: #58a6ff;
+    font-family: 'DM Mono', monospace;
+    font-size: .78rem;
+    line-height: 1.7;
+    padding: 1.25rem 1.5rem;
+    border-radius: 8px;
+    overflow-x: auto;
+    margin: 1rem 0;
+  }
+  .ping-output .ok { color: #3fb950; }
+  .ping-output .warn { color: #d29922; }
+
+  /* ── LAYER LIST ── */
+  .layer-list { list-style: none; display: flex; flex-direction: column; gap: .5rem; margin: 1rem 0; }
+  .layer-list li {
+    display: flex; align-items: flex-start; gap: .75rem;
+    font-size: .92rem; color: var(--ink-light);
+  }
+  .layer-list li::before {
+    content: '▸';
+    color: var(--accent);
+    flex-shrink: 0;
+    margin-top: .08rem;
+  }
+
+  /* ── DIVIDER ── */
+  .divider {
+    border: none;
+    border-top: 1px solid var(--rule);
+    margin: 3rem 0;
+  }
+
+  /* ── FIGURE CAPTION ── */
+  .fig-caption {
+    font-size: .78rem;
+    color: var(--ink-faint);
+    text-align: center;
+    font-style: italic;
+    margin-top: .35rem;
+    margin-bottom: 1.25rem;
+  }
+
+  /* ── REAL WORLD NOTE ── */
+  .real-world {
+    background: var(--accent-green-soft);
+    border: 1px solid #6ee7b7;
+    border-radius: 8px;
+    padding: 1rem 1.25rem;
+    font-size: .88rem;
+    color: #065f46;
+    margin: 1.25rem 0;
+  }
+  .real-world strong { font-weight: 500; }
+
+  /* ── PROTOCOL BULLET LIST ── */
+  .proto-list { list-style: none; display: flex; flex-direction: column; gap: .3rem; margin: .75rem 0 1rem; }
+  .proto-list li { display: flex; align-items: baseline; gap: .6rem; font-size: .9rem; color: var(--ink-light); }
+  .proto-list li .tag {
+    font-family: 'DM Mono', monospace;
+    font-size: .75rem;
+    color: #fff;
+    background: var(--accent);
+    padding: .05rem .4rem;
+    border-radius: 3px;
+    flex-shrink: 0;
+  }
+
+  /* scrollbar */
+  ::-webkit-scrollbar { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #ccc; border-radius: 10px; }
+</style>
+</head>
+<body>
+
+<!-- ═══ HEADER ═══ -->
+<header class="course-header">
+  <div class="badge">CCNA — Module 1</div>
+  <h1>Jour 1 – Réseaux, câbles,<br>modèles OSI et TCP</h1>
+  <p>Fondamentaux des réseaux Cisco</p>
+</header>
+
+<div class="wrapper">
+
+  <!-- ═══ OBJECTIFS ═══ -->
+  <div class="objectives">
+    <h2>Tâches du jour 1</h2>
+    <p style="font-size:.88rem; color:var(--ink-light); margin-bottom:1rem;">Lisez les notes du cours d'aujourd'hui. Aujourd'hui, vous apprendrez ce qui suit :</p>
+    <div class="tasks-grid">
+      <div class="task-item">Dispositifs et schémas réseau</div>
+      <div class="task-item">Les modèles OSI et TCP</div>
+      <div class="task-item">Câbles et supports</div>
+      <div class="task-item">Connexion à un routeur</div>
+    </div>
+  </div>
+
+  <div class="module-reqs">
+    <h3>Ce module correspond aux exigences suivantes</h3>
+    <ul>
+      <li>Reconnaître le but et les fonctions de divers périphériques réseau, tels que les routeurs, les commutateurs, les ponts et les concentrateurs</li>
+      <li>Sélectionner les composants requis pour répondre à une spécification réseau donnée</li>
+      <li>Identifier les applications courantes et leur impact sur le réseau</li>
+      <li>Décrire le but et le fonctionnement de base des protocoles dans les modèles OSI et TCP/IP</li>
+      <li>Prédire le flux de données entre deux hôtes sur un réseau</li>
+      <li>Identifier les supports, câbles, ports et connecteurs appropriés pour connecter les périphériques réseau Cisco à d'autres périphériques réseau et hôtes dans un LAN</li>
+    </ul>
+  </div>
+
+  <!-- ═══ PÉRIPHÉRIQUES RÉSEAU ═══ -->
+  <h2 class="section-title"><span class="num">01</span> Périphériques réseau</h2>
+
+  <p>En tant qu'ingénieur réseau, vous utiliserez une gamme de câbles réseau et d'autres supports. Vous devez savoir quels câbles fonctionneront avec quels périphériques et interfaces pour les ports WAN, LAN et de gestion. Une grande partie des informations servira de revue si vous avez étudié le réseau CompTIA+ avant le CCNA (ce que je recommande).</p>
+
+  <!-- Commutateurs -->
+  <h3 class="sub-title">Commutateurs réseau</h3>
+
+  <p>Il y a seulement quelques années, les réseaux étaient encore assez petits. Cela signifiait que vous pouviez simplement brancher tous les appareils sur un hub ou un certain nombre de hubs. Le travail du concentrateur consistait à amplifier le signal sur le câble réseau, si nécessaire, puis à transmettre les données du câble à tous les autres appareils branchés. Le problème avec cela, bien sûr, est que le message était destiné à un seul réseau hôte, mais il serait envoyé à des dizaines ou des centaines d'autres hôtes connectés à d'autres hubs sur le réseau.</p>
+
+  <p>Les commutateurs réseau sont une version plus intelligente des concentrateurs. Les commutateurs utilisent la mémoire adressable par contenu (CAM) et ont donc la capacité de se souvenir quel périphérique est branché sur quel port. Cisco fabrique des modèles de commutateurs conçus pour fonctionner dans les petits bureaux et jusqu'aux grands réseaux d'entreprise composés de milliers d'appareils.</p>
+
+  <p>Fondamentalement, les commutateurs fonctionnent en utilisant les adresses MAC de l'appareil (appelées couche 2) et les adresses IP (appelées couche 3), ou ils peuvent effectuer des tâches plus complexes, telles que le traitement de listes d'autoriser/refuser le trafic ou les protocoles et numéros de port (connus sous le nom de couche 4), ou une combinaison de toutes ces couches et plus encore.</p>
+
+  <p>Les premières versions des commutateurs étaient appelées <strong>ponts réseau</strong>. Les ponts ont examiné les ports sources et les adresses MAC des trames afin de construire une table et de prendre des décisions de transfert. Les tables étaient généralement accessibles via un logiciel, tandis que les commutateurs utilisaient du matériel (c'est-à-dire des puces intégrées spécifiques à une application ou des ASIC) pour accéder à une table CAM. Par conséquent, un commutateur peut être considéré comme un pont multiport.</p>
+
+  <p>L'utilisation d'un commutateur vous permet de diviser votre réseau en sections plus petites et plus faciles à gérer (appelées <strong>segments</strong>). Cela permet à son tour aux équipes qui travaillent au sein de votre entreprise, telles que les ressources humaines, les finances, le juridique, etc., de travailler sur la même section du réseau en même temps.</p>
+
+  <p style="font-size:.85rem; color:var(--ink-faint); text-align:center; margin:.25rem 0 .5rem;">Figure 1.1 – Cisco 2960 Switch</p>
+
+  <p>Chaque appareil se connecte à une interface sur le commutateur, appelée <strong>port</strong>. Les vitesses de port réseau courantes sont de 100 Mbps et 1000 Mbps (généralement appelées 1 Gbps). Il existe souvent des ports fibre que vous pouvez utiliser pour connecter un commutateur à un autre commutateur. Chaque commutateur comporte des ports de gestion auxquels vous pouvez vous connecter afin d'effectuer une configuration initiale et d'obtenir un accès général pour la maintenance sur le réseau.</p>
+
+  <p style="font-size:.85rem; color:var(--ink-faint); text-align:center; margin:.25rem 0 .5rem;">Figure 1.2 – Changer les types d'interface (Ethernet / USB / Management / High Speed)</p>
+
+  <p>Vous pouvez également utiliser des téléphones IP avec les commutateurs et, mieux encore, les ports de commutateur peuvent alimenter ces téléphones (en utilisant des interfaces <strong>Power over Ethernet (PoE)</strong>). Le commutateur réseau de base sera utilisé pour :</p>
+
+  <ul class="layer-list">
+    <li>Connecter des périphériques réseau tels que des imprimantes et des PC</li>
+    <li>Donner accès aux serveurs et routeurs du réseau</li>
+    <li>Segmenter le réseau avec des VLAN</li>
+  </ul>
+
+  <div class="callout callout-info">
+    <div class="callout-label">À retenir</div>
+    <p>Les VLAN sont des réseaux locaux virtuels. Nous les couvrirons en détail au deuxième jour.</p>
+  </div>
+
+  <!-- Routeurs -->
+  <h3 class="sub-title">Routeurs</h3>
+
+  <p>En tant qu'ingénieur Cisco, vous passerez beaucoup de temps à installer, configurer et dépanner des routeurs. Pour cette raison, plus de la moitié du programme CCNA est dédié à tout savoir sur la configuration du routeur.</p>
+
+  <p>Un routeur est un appareil utilisé pour la mise en réseau. Alors que les commutateurs réseau impliquent des périphériques sur le même réseau communiquant entre eux, le routeur communique avec des périphériques sur <strong>différents réseaux</strong>. Les anciens modèles de routeurs n'avaient que des ports, qui étaient physiquement intégrés et attachés à la carte mère. Les réseaux modernes nécessitent désormais un routeur pour exécuter les fonctions de téléphonie IP, de commutation et de sécurité, et pour se connecter à plusieurs types d'entreprises de télécommunications. Pour cette raison, les routeurs sont également <strong>modulaires</strong>, ce qui signifie que vous avez le châssis du routeur et des emplacements vides dans lesquels vous pouvez connecter une variété de modules de routage ou de commutation.</p>
+
+  <p style="font-size:.85rem; color:var(--ink-faint); text-align:center; margin:.25rem 0 .5rem;">Figure 1.3 – Routeur modulaire Cisco avec un emplacement vide à droite</p>
+
+  <p>Le site Web de Cisco propose de nombreux conseils et informations pour expliquer quel modèle de routeur répondra aux besoins de votre entreprise. Il existe également des outils qui vous aideront à sélectionner le modèle et le système d'exploitation appropriés. Cela vaut la peine d'apprendre à naviguer dans les pages d'assistance et de configuration et de les ajouter à vos favoris pour une référence rapide.</p>
+
+  <!-- ═══ DIAGRAMMES RÉSEAU ═══ -->
+  <h2 class="section-title"><span class="num">02</span> Comment les réseaux sont représentés dans les diagrammes</h2>
+
+  <p>Tous les ingénieurs réseau ont besoin d'une méthode commune pour communiquer, quels que soient le fournisseur et le fournisseur de télécommunications qu'ils utilisent. Si je devais vous décrire la topologie de mon réseau pour des recommandations de conception ou de sécurité, cela fonctionnerait beaucoup mieux s'il était dans un format convenu par opposition à quelque chose que j'avais dessiné à la main de mémoire. L'examen Cisco Certified Design Associate (CCDA) est l'endroit où vous en apprendrez beaucoup plus sur les topologies de réseau. Quant à l'examen CCNA, vous aurez besoin d'une compréhension de base de ces topologies, car l'examen peut présenter des problèmes de réseau et vous demander où vous pensez que le problème se situe.</p>
+
+  <p>Voici les symboles courants des périphériques réseau que vous rencontrerez dans votre travail en tant qu'ingénieur réseau. Vous pouvez télécharger ces icônes à partir du site Web de Cisco si vous tapez «Icônes Cisco» dans le moteur de recherche de votre navigateur.</p>
+
+  <table class="topo-table">
+    <thead>
+      <tr><th>Symbole</th><th>Description</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Routeurs</td><td>Symbole disque bleu avec flèches (plusieurs variantes)</td></tr>
+      <tr><td>Switch (Niveau 2)</td><td>Symbole carré bleu avec flèches</td></tr>
+      <tr><td>Routeur avec pare-feu</td><td>Disque bleu + dessus rouge brique</td></tr>
+      <tr><td>Routeur Sans Fil</td><td>Disque bleu avec antennes</td></tr>
+      <tr><td>Switch multicouche</td><td>Cube bleu avec point rouge central</td></tr>
+      <tr><td>Cloud</td><td>Nuage gris – Équipement appartenant au fournisseur de télécommunications</td></tr>
+      <tr><td>Périphérique d'extrémité</td><td>Icône PC</td></tr>
+      <tr><td>Telephone IP</td><td>Icône téléphone bleu</td></tr>
+      <tr><td>Pare-feu</td><td>Icône disque avec bouton lecture</td></tr>
+    </tbody>
+  </table>
+
+  <!-- ═══ TOPOLOGIES ═══ -->
+  <h2 class="section-title"><span class="num">03</span> Topologies LAN et WAN</h2>
+
+  <p>La topologie fait référence à la façon dont l'équipement réseau est organisé pour communiquer. La manière de procéder pourrait être limitée par les protocoles de communication utilisés par l'équipement, le coût, la géographie ou d'autres facteurs, tels que le besoin de redondance en cas de défaillance de la liaison principale.</p>
+
+  <div class="callout callout-info">
+    <div class="callout-label">Important</div>
+    <p>Il existe souvent une différence entre la <strong>topologie physique</strong> (la façon dont le réseau apparaît lorsque vous le regardez) et la <strong>topologie logique</strong> (la façon dont le réseau se voit, c'est-à-dire comment les données circulent).</p>
+  </div>
+
+  <h4 class="sub-sub-title">Point à point</h4>
+  <p>Cette topologie est principalement utilisée pour les liaisons WAN. Une liaison point à point est simplement une liaison dans laquelle un appareil a une connexion à un autre appareil. Vous pouvez ajouter un lien secondaire connectant chaque périphérique, mais si le périphérique lui-même échoue, vous perdez toute connectivité.</p>
+  <p class="fig-caption">Figure 1.4 – Point-to-Point Topology</p>
+
+  <h4 class="sub-sub-title">Bus</h4>
+  <p>Cette topologie a été créée avec les premiers réseaux Ethernet, où tous les périphériques devaient être connectés à un câble épais appelé <strong>backbone</strong>. Si le câble dorsal tombe en panne, le réseau tombe en panne. Si un câble reliant l'appareil au câble de la dorsale échoue, seul cet appareil perdra la connexion.</p>
+  <p class="fig-caption">Figure 1.5 – Topologie en Bus</p>
+
+  <h4 class="sub-sub-title">Étoile</h4>
+  <p>C'est probablement la topologie la plus courante que vous rencontrerez. Chaque périphérique réseau est connecté à un concentrateur central ou à un commutateur. Si l'un des câbles vers les périphériques tombe en panne, seul ce périphérique est déconnecté.</p>
+  <p class="fig-caption">Figure 1.6 – Topologie en étoile</p>
+
+  <h4 class="sub-sub-title">Ring (Anneau)</h4>
+  <p>Une topologie en anneau est utilisée par les réseaux en anneau à jetons et les réseaux FDDI (Fiber Distributed Data Interface), qui ont tous deux été mis hors service il y a plusieurs années. Une topologie en anneau utilisée avec les réseaux FDDI utilise une connexion à double anneau pour assurer la redondance en cas de défaillance d'un anneau.</p>
+  <p class="fig-caption">Figure 1.7 – Topologie Token Ring / Figure 1.8 – Topologie Dual-Ring</p>
+
+  <h4 class="sub-sub-title">Mesh (Maillage)</h4>
+  <p>Lorsque le temps d'arrêt n'est pas une option, une topologie maillée peut être envisagée. Les réseaux à <strong>maillage complet</strong> fournissent une connexion à chaque appareil à partir de tous les autres appareils. Cette solution est souvent utilisée avec les connexions WAN.</p>
+  <p>En règle générale, ce type de solution s'avérera très coûteux. Pour cette raison, des topologies à <strong>maillage partiel</strong> peuvent être envisagées. Cela signifie qu'il peut y avoir un ou plusieurs «sauts», ou routeurs, pour accéder à chaque périphérique.</p>
+  <p class="fig-caption">Figure 1.9 – Topologie Full-Mesh / Figure 1.10 – Topologie Partial-Mesh</p>
+
+  <h4 class="sub-sub-title">Hub-and-Spoke</h4>
+  <p>En raison du coût de l'équipement, des connexions WAN et de la bande passante, les entreprises utilisent souvent une conception en étoile. Un routeur puissant se trouve au centre (hub), généralement au siège d'une entreprise, tandis que les rayons représentent des bureaux distants, qui nécessitent des routeurs moins puissants. Il y a évidemment des problèmes avec ce type de topologie ; cependant, il est encore largement utilisé.</p>
+  <p class="fig-caption">Figure 1.11 – Topologie Hub-and-Spoke</p>
+
+  <h3 class="sub-title">Physique versus logique</h3>
+  <p>Lorsque vous pouvez voir l'équipement réseau, vous regardez la topologie physique. Cela peut être trompeur car, bien que le réseau semble être câblé en étoile, il pourrait en fait fonctionner logiquement comme un anneau. Un exemple classique de ceci est un réseau en anneau à jetons : bien que le trafic circule autour de l'anneau de manière circulaire, tous les appareils se branchent sur un hub. L'anneau est en fait à l'intérieur du moyeu.</p>
+
+  <table class="topo-table">
+    <thead>
+      <tr><th>Topologie</th><th>Physique</th><th>Logique</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Bus</td><td>Bus</td><td>Bus</td></tr>
+      <tr><td>Star</td><td>Star</td><td>Bus</td></tr>
+      <tr><td>Token Ring</td><td>Star</td><td>Ring</td></tr>
+      <tr><td>Point-to-Point</td><td>Bus</td><td>Bus</td></tr>
+      <tr><td>FDDI</td><td>Ring</td><td>Ring</td></tr>
+    </tbody>
+  </table>
+  <p class="fig-caption">Tableau 1.1 – Physical versus Logical Topologies</p>
+
+  <!-- ═══ MODÈLES OSI ET TCP ═══ -->
+  <h2 class="section-title"><span class="num">04</span> Modèles OSI et TCP</h2>
+
+  <h3 class="sub-title">Le modèle OSI</h3>
+
+  <p>Open Standards Interconnection (OSI) a été créé par l'Organisation internationale de normalisation (ISO). Avec le boom de la technologie est venu la montée de plusieurs géants dans les domaines des périphériques réseau et des logiciels, y compris Cisco, Microsoft, Novell, IBM, HP, Apple et d'autres. Chaque fournisseur avait ses propres types de câbles et ports et exécutait ses propres protocoles de communication. Cela posait des problèmes majeurs si vous vouliez acheter des routeurs à une entreprise, des commutateurs à une autre et des serveurs à une autre.</p>
+
+  <p>Il y avait des solutions de contournement pour ces problèmes, telles que le déploiement de passerelles sur le réseau qui pouvaient se traduire entre les protocoles, mais ces solutions créaient des goulots d'étranglement et rendaient le dépannage très difficile. Finalement, les fournisseurs ont dû se mettre d'accord sur une norme commune, et la suite gratuite de protocoles appelée <strong>Transmission Control Protocol/Internet Protocol (TCP/IP)</strong> a finalement été adoptée par la plupart.</p>
+
+  <p>L'ISO a créé le modèle OSI pour aider les fournisseurs à s'entendre sur un ensemble de normes communes. Cela impliquait de diviser les fonctions de réseau en un ensemble de niveaux ou de couches logiques. Chaque couche remplirait un ensemble spécifique de fonctions.</p>
+
+  <p>Le modèle OSI divise toutes les fonctions réseau en sept couches distinctes. Le modèle en couches commence à la couche 7 et descend jusqu'à la couche 1.</p>
+
+  <table class="osi-table">
+    <thead>
+      <tr><th>Couche #</th><th>Nom de la couche</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><span class="layer-badge">7</span></td><td>Application</td></tr>
+      <tr><td><span class="layer-badge">6</span></td><td>Présentation</td></tr>
+      <tr><td><span class="layer-badge">5</span></td><td>Session</td></tr>
+      <tr><td><span class="layer-badge">4</span></td><td>Transport</td></tr>
+      <tr><td><span class="layer-badge">3</span></td><td>Réseau</td></tr>
+      <tr><td><span class="layer-badge">2</span></td><td>Liaison de données</td></tr>
+      <tr><td><span class="layer-badge">1</span></td><td>Physique</td></tr>
+    </tbody>
+  </table>
+  <p class="fig-caption">Tableau 1.2 – Le modèle OSI</p>
+
+  <p>Au fur et à mesure que les données sont transmises des couches supérieures vers le bas pour le transport sur le support réseau physique, les données sont placées dans différents types de boîtes de données logiques. Le processus de déplacement des données vers le bas du modèle OSI est appelé <strong>encapsulation</strong>. Remonter et faire dépouiller ces boîtes de leurs données s'appelle la <strong>désencapsulation</strong>.</p>
+
+  <p class="fig-caption">Figure 1.13 – Encapsulation (Application/Présentation/Session → DATA | Transport → SEGMENT HEADER | Network → PACKET HEADER | Data Link → FRAME HEADER | Physical → BITS)</p>
+
+  <!-- Couches détaillées -->
+  <h4 class="sub-sub-title">Couche 7 – Couche d'application</h4>
+  <p>Cette couche est la couche la plus proche de l'utilisateur final. La couche d'application n'est pas le système d'exploitation des périphériques, mais fournit généralement des services tels que la messagerie électronique (SNMP et POP3), la navigation Web (via HTTP) et les services de transfert de fichiers (via FTP). La couche d'application détermine la disponibilité des ressources.</p>
+
+  <h4 class="sub-sub-title">Couche 6 – Couche de présentation</h4>
+  <p>La couche présentation présente les données à la couche application. Le multimédia fonctionne ici, alors pensez MP4, JPEG, GIF, etc. Le cryptage, le décryptage et la compression des données ont également lieu à cette couche.</p>
+
+  <h4 class="sub-sub-title">Couche 5 – Couche de session</h4>
+  <p>Le rôle de la couche de session est de configurer, gérer et terminer les sessions ou les dialogues entre les périphériques. Celles-ci se déroulent sur des liens logiques et ce qui se passe réellement est la jonction de deux applications logicielles. SQL, RPC et NFS fonctionnent tous sur la couche Session.</p>
+
+  <h4 class="sub-sub-title">Couche 4 – Couche de transport</h4>
+  <p>Le rôle de la couche de transport est de décomposer les données des couches supérieures en parties plus petites, appelées <strong>segments</strong>. Les circuits virtuels sont configurés ici, qui sont nécessaires avant que les appareils puissent communiquer.</p>
+
+  <p>Avant que les données puissent être transmises à travers le réseau, la couche de transport doit établir la quantité de données pouvant être envoyées au périphérique distant. Cela dépendra de la vitesse et de la fiabilité de la liaison de bout en bout.</p>
+
+  <p>Les trois méthodes utilisées pour contrôler le flux de données sont les suivantes :</p>
+
+  <div class="mode-card">
+    <h4>Flow Control (Contrôle de flux)</h4>
+    <p>Si le système récepteur reçoit plus d'informations qu'il ne peut en traiter, il demandera au système émetteur de s'arrêter pendant une courte période. Le paquet envoyé demandant à l'autre appareil de s'arrêter est appelé <strong>message d'extinction source</strong>.</p>
+  </div>
+  <div class="mode-card">
+    <h4>Windowing (Fenêtrage)</h4>
+    <p>Avec le fenêtrage, chaque système convient de la quantité de données à envoyer avant qu'un accusé de réception ne soit requis. Cette «fenêtre» s'ouvre et se ferme à mesure que les données se déplacent afin de maintenir un flux constant.</p>
+  </div>
+  <div class="mode-card">
+    <h4>Acknowledgements (Accusé de réception)</h4>
+    <p>Lorsqu'un certain nombre de segments est reçu, le fait qu'ils sont tous arrivés en toute sécurité et dans le bon ordre doit être communiqué au système d'envoi.</p>
+  </div>
+
+  <p>Tout cela est convenu au cours d'un processus appelé <strong>établissement de liaison à trois (Three-Way Handshake)</strong>. C'est là que vous envoyez un paquet pour établir la session. Ce premier paquet est appelé un paquet de synchronisation (SYN). Ensuite, le périphérique distant répond avec un paquet d'accusé de réception de synchronisation (SYN-ACK). La session est établie dans la troisième phase lorsqu'un paquet d'accusé de réception (ACK) est envoyé. Tout cela se fait via le service TCP.</p>
+  <p class="fig-caption">Figure 1.17 – Three-Way Handshake (Synchronize → Synchronize and Acknowledge → Acknowledge)</p>
+
+  <p>La couche de transport comprend plusieurs protocoles, et les plus connus sont :</p>
+
+  <div class="mode-card">
+    <h4>TCP – Transmission Control Protocol</h4>
+    <p>TCP est connu comme un <strong>protocole orienté connexion fiable</strong>. Il utilise la prise de contact à trois, le fenêtrage et d'autres techniques pour garantir que les données parviennent à destination en toute sécurité. De nombreux protocoles utilisent TCP, notamment Telnet, HTTPS et FTP.</p>
+  </div>
+  <div class="mode-card">
+    <h4>UDP – User Datagram Protocol</h4>
+    <p>UDP est connu comme un <strong>protocole sans connexion</strong>. Il numérote chaque paquet et les envoie ensuite à leur destination. Il ne vérifie jamais s'ils sont arrivés en toute sécurité. Les paquets UDP sont beaucoup plus petits que les paquets TCP et ils sont très utiles si une connexion vraiment fiable n'est pas nécessaire. Les protocoles qui utilisent UDP incluent TFTP.</p>
+  </div>
+
+  <h4 class="sub-sub-title">Couche 3 – Couche réseau</h4>
+  <p>La couche réseau prend les segments de la couche de transport et les décompose en unités plus petites appelées <strong>paquets</strong>. La couche réseau doit déterminer le meilleur chemin à emprunter d'un réseau à un autre ; pour cette raison, les routeurs fonctionnent à cette couche. Les routeurs utilisent ici l'adressage logique, et l'adressage TCP/IP est appelé adressage IP.</p>
+
+  <h4 class="sub-sub-title">Couche 2 – Couche de liaison de données</h4>
+  <p>La couche de liaison de données découpe les paquets en unités plus petites appelées <strong>trames</strong>. Les commutateurs de couche 2 fonctionnent à cette couche et utilisent des adresses matérielles ou MAC, de sorte qu'ils peuvent changer le trafic beaucoup plus rapidement car il n'est pas nécessaire de vérifier les adresses IP et les tables de routage. Les protocoles WAN fonctionnent au niveau de la couche 2, notamment HDLC, RNIS et PPP. Ethernet fonctionne également au niveau de la couche 2.</p>
+  <p>Afin de s'interfacer avec les niveaux supérieur et inférieur, la couche de liaison de données est en outre subdivisée en la sous-couche de contrôle de liaison logique (<strong>LLC</strong>) et la sous-couche de contrôle d'accès au support (<strong>MAC</strong>).</p>
+
+  <h4 class="sub-sub-title">Couche 1 – Couche physique</h4>
+  <p>Au niveau de cette couche, les cadres sont convertis en bits pour être placés sur le fil. Ces bits sont constitués d'impulsions électriques, qui sont lus comme des bits «on» et «off», ou en 1 et 0 binaires, respectivement. Les concentrateurs fonctionnent à cette couche, et c'est ici que vous trouverez les spécifications des câbles, telles que RJ45.</p>
+
+  <!-- Dépannage OSI -->
+  <h3 class="sub-title">Dépannage OSI</h3>
+  <p>L'utilisation d'une approche par couches peut être très efficace lorsque vous dépannez votre réseau. La seule décision à partir de maintenant est de déterminer la manière dont vous souhaitez utiliser la pile OSI : méthode descendante, ascendante ou diviser-pour-conquérir.</p>
+  <p>Je recommande d'utiliser la <strong>méthode ascendante</strong> au début afin de ne pas perdre de temps à regarder des applications dont la cause se trouve souvent dans les couches inférieures, telles que des câbles lâches ou cassés ou un adressage IP incorrect.</p>
+
+  <table class="topo-table">
+    <thead><tr><th>Couche</th><th>Questions de dépannage</th></tr></thead>
+    <tbody>
+      <tr><td>Couche 1</td><td>Tous les câbles sont-ils correctement insérés ? Les extrémités des câbles sont-elles pliées ou usées ? La vitesse du port a-t-elle été réglée correctement ? L'interface a-t-elle été ouverte par l'administrateur ?</td></tr>
+      <tr><td>Couche 2</td><td>Le protocole correct a-t-il été appliqué à l'interface pour qu'il s'accorde avec l'autre côté (Ethernet / PPP / HDLC, etc.) ?</td></tr>
+      <tr><td>Couche 3</td><td>L'interface utilise-t-elle l'adresse IP et le masque de sous-réseau corrects ?</td></tr>
+      <tr><td>Couche 4</td><td>Le bon protocole de routage est-il utilisé et le bon réseau est-il annoncé par le routeur ?</td></tr>
+    </tbody>
+  </table>
+
+  <!-- TCP/IP -->
+  <h3 class="sub-title">Le modèle TCP/IP ou DoD</h3>
+  <p>Le modèle TCP/IP est un autre cadre et une alternative au modèle OSI. Le modèle TCP/IP est un modèle à quatre ou cinq couches créé par une association appelée <strong>DARPA</strong>. Il est également connu sous le nom de modèle du ministère de la Défense (DoD).</p>
+
+  <h4 class="sub-sub-title">Modèle TCP à 4 couches (ancien)</h4>
+  <ul class="proto-list">
+    <li><span class="tag">4</span>Application [Telnet/FTP/DNS/RIP]</li>
+    <li><span class="tag">3</span>Transport/Host-to-Host [UDP/TCP/ICMP]</li>
+    <li><span class="tag">2</span>Internet ou interréseau [IPSec/IP]</li>
+    <li><span class="tag">1</span>Lien / Interface réseau / Physique [Frame Relay/Ethernet/ATM]</li>
+  </ul>
+
+  <h4 class="sub-sub-title">Modèle TCP à 5 couches (nouveau – préféré par Cisco)</h4>
+  <ul class="proto-list">
+    <li><span class="tag">5</span>Application [Telnet/FTP/DNS/RIP/HTTP]</li>
+    <li><span class="tag">4</span>Transport/Host-to-Host [UDP/TCP/ICMP]</li>
+    <li><span class="tag">3</span>Réseau [IPSec/IP]</li>
+    <li><span class="tag">2</span>Liaison de données [Ethernet/Frame Relay/PPP]</li>
+    <li><span class="tag">1</span>Lien / Interface réseau / Physique [Bits on the wire]</li>
+  </ul>
+
+  <table class="osi-table">
+    <thead><tr><th>Couche TCP (5)</th><th>Données</th><th>Unité</th></tr></thead>
+    <tbody>
+      <tr><td>Application</td><td>Données, mais pas encore encapsulées</td><td>—</td></tr>
+      <tr><td>Transport</td><td>En-tête TCP ajouté aux données</td><td>Segment</td></tr>
+      <tr><td>Réseau</td><td>En-tête IP ajouté (y compris l'adresse IP)</td><td>Paquet</td></tr>
+      <tr><td>Liaison de données</td><td>En-tête de liaison de données ajouté (adresse de liaison de données)</td><td>Trame</td></tr>
+      <tr><td>Physique</td><td>Transformé en signaux électriques</td><td>Bits sur le câble</td></tr>
+    </tbody>
+  </table>
+  <p class="fig-caption">Tableau 1.3 – Le modèle TCP à cinq couches</p>
+
+  <table class="topo-table">
+    <thead><tr><th>OSI Layer #</th><th>OSI</th><th>TCP/IP</th></tr></thead>
+    <tbody>
+      <tr><td>7</td><td>Application</td><td>Application</td></tr>
+      <tr><td>6</td><td>Présentation</td><td>Application</td></tr>
+      <tr><td>5</td><td>Session</td><td>Application</td></tr>
+      <tr><td>4</td><td>Transport</td><td>Hôte à hôte</td></tr>
+      <tr><td>3</td><td>Réseau</td><td>Internet</td></tr>
+      <tr><td>2</td><td>Liaison de données</td><td>Interface réseau</td></tr>
+      <tr><td>1</td><td>Physique</td><td>Interface réseau</td></tr>
+    </tbody>
+  </table>
+  <p class="fig-caption">Tableau 1.4 – Mappage du modèle TCP/IP sur le modèle OSI</p>
+
+  <div class="callout callout-warn">
+    <div class="callout-label">Note pour l'examen</div>
+    <p>Cisco préfère maintenant le nouveau modèle TCP (5 couches) au modèle OSI en tant que cadre de réseau, mais ils s'attendent toujours à ce que vous compreniez le modèle OSI et l'ont donc laissé dans le programme.</p>
+  </div>
+
+  <!-- ═══ TCP/IP SUITE ═══ -->
+  <h2 class="section-title"><span class="num">05</span> TCP/IP</h2>
+
+  <p>TCP/IP est une suite complète de protocoles et de services qui permettent la communication sur les réseaux. Les concurrents antérieurs de TCP/IP, tels que IPX/SPX, ont pratiquement disparu en raison de leur manque d'adoption et de leur développement continu.</p>
+
+  <p>TCP/IP est un ensemble de normes disponibles et gratuit à utiliser, maintenu par l'<strong>IETF</strong> (Internet Engineering Task Force), et il est utilisé pour la connectivité des appareils de bout en bout. Il a été développé et amélioré grâce à la soumission de demandes de commentaires (RFC). Un exemple est la traduction d'adresses réseau (NAT) discutée dans la RFC 2663.</p>
+
+  <h4 class="sub-sub-title">TCP – Transmission Control Protocol</h4>
+  <p>TCP fonctionne au niveau de la couche de transport du modèle OSI. Il fournit un service orienté connexion pour un transfert fiable des données entre les périphériques réseau. TCP fournit également le contrôle de flux, le séquençage, le fenêtrage et la détection d'erreurs. TCP est décrit dans la RFC 793.</p>
+
+  <p><strong>Ports TCP courants :</strong></p>
+  <table class="port-table">
+    <thead><tr><th>Protocole</th><th>Port</th></tr></thead>
+    <tbody>
+      <tr><td>FTP Data</td><td>20</td></tr>
+      <tr><td>FTP Control</td><td>21</td></tr>
+      <tr><td>SSH</td><td>22</td></tr>
+      <tr><td>Telnet</td><td>23</td></tr>
+      <tr><td>SMTP</td><td>25</td></tr>
+      <tr><td>DNS</td><td>53 (also uses UDP)</td></tr>
+      <tr><td>HTTP</td><td>80</td></tr>
+      <tr><td>POP3</td><td>110</td></tr>
+      <tr><td>NNTP</td><td>119</td></tr>
+      <tr><td>NTP</td><td>123</td></tr>
+      <tr><td>TLS/SSL</td><td>443</td></tr>
+    </tbody>
+  </table>
+
+  <h4 class="sub-sub-title">IP – Internet Protocol</h4>
+  <p>IP fonctionne au niveau de la couche réseau du modèle OSI. Il est sans connexion et est responsable du transport des données sur le réseau. L'adressage IP est une fonction du protocole Internet. IP examine l'adresse de la couche réseau de chaque paquet et détermine le meilleur chemin à emprunter pour ce paquet pour atteindre sa destination. IP est discuté en détail dans la RFC 791.</p>
+
+  <h4 class="sub-sub-title">UDP – User Datagram Protocol</h4>
+  <p>UDP fonctionne également au niveau de la couche de transport du modèle OSI. Il transporte des informations entre les périphériques réseau mais, contrairement à TCP, aucune connexion n'est établie en premier. UDP est sans connexion, offre le meilleur effort possible et ne donne aucune garantie que les données atteindront leur destination.</p>
+  <p>UDP consomme moins de bande passante que TCP et convient aux applications dans lesquelles une faible latence est préférée à la fiabilité. UDP est décrit dans la RFC 768.</p>
+
+  <p><strong>Ports UDP courants :</strong></p>
+  <table class="port-table">
+    <thead><tr><th>Protocole</th><th>Port</th></tr></thead>
+    <tbody>
+      <tr><td>DNS</td><td>53</td></tr>
+      <tr><td>TFTP</td><td>69</td></tr>
+      <tr><td>SNMP</td><td>161/162</td></tr>
+    </tbody>
+  </table>
+
+  <h4 class="sub-sub-title">FTP – File Transfer Protocol</h4>
+  <p>FTP fonctionne au niveau de la couche application et est responsable du transport fiable des données sur une liaison distante. Parce qu'il doit être fiable, FTP utilise TCP pour le transfert de données. FTP utilise les ports 20 et 21. Habituellement, une première connexion est établie au serveur FTP à partir du client sur le port 21. Une deuxième connexion de données est alors établie soit en laissant le serveur FTP sur le port 20.</p>
+  <pre>Router# <span class="prompt">debug ip ftp</span>     <span class="comment">← déboguer le trafic FTP</span></pre>
+
+  <h4 class="sub-sub-title">TFTP – Trivial File Transfer Protocol</h4>
+  <p>Pour un transfert de données moins fiable, TFTP constitue une bonne alternative. TFTP fournit un transfert sans connexion en utilisant le port UDP 69. TFTP est largement utilisé sur les routeurs Cisco pour sauvegarder les configurations et mettre à niveau le routeur :</p>
+<pre><span class="prompt">RouterA#</span>copy tftp flash:
+Address or name of remote host []? <span class="ok">10.10.10.1</span>
+Source filename []? <span class="ok">/c2500-js-l.121-17.bin</span>
+Destination filename [c2500js-l.121-17.bin]?</pre>
+
+  <div class="real-world">
+    <strong>Dans le monde réel :</strong> Avoir un serveur sur un réseau contenant des copies de sauvegarde de la configuration de démarrage et de l'IOS est en effet une très bonne idée.
+  </div>
+
+  <p>Les autres commandes facultatives sont <code>copy flash tftp</code> si vous souhaitez stocker une copie de sauvegarde, ou <code>copy running-config tftp</code> si vous voulez sauvegarder votre fichier de configuration en cours d'exécution.</p>
+
+  <h4 class="sub-sub-title">SMTP – Simple Mail Transfer Protocol</h4>
+  <p>SMTP définit comment les e-mails sont envoyés au serveur de messagerie à partir du client. Il utilise TCP pour assurer une connexion fiable. SMTP utilise le port TCP 25. POP3 est un protocole qui transfère l'e-mail du serveur au client.</p>
+
+  <h4 class="sub-sub-title">HTTP – Hyper Text Transfer Protocol</h4>
+  <p>HTTP utilise TCP (port 80) pour envoyer du texte, des graphiques et d'autres fichiers multimédias d'un serveur Web aux clients. Ce protocole vous permet d'afficher des pages Web et se situe au niveau de la couche d'application du modèle OSI. HTTPS est une version sécurisée de HTTP qui utilise Secure Sockets Layer (SSL) ou Transport Layer Security (TLS) pour crypter les données avant leur envoi.</p>
+  <pre><span class="prompt">Router#</span>debug ip http     <span class="comment">← déboguer le trafic HTTP</span></pre>
+
+  <h4 class="sub-sub-title">Telnet</h4>
+  <p>Telnet utilise TCP (port 23) pour permettre une connexion à distance aux périphériques réseau. Telnet n'est pas sécurisé et de nombreux administrateurs utilisent désormais <strong>Secure Shell (SSH)</strong>, qui utilise le port TCP 22, comme alternative pour assurer une connexion sécurisée.</p>
+  <div class="callout callout-info">
+    <div class="callout-label">Important</div>
+    <p>Telnet est le seul utilitaire qui peut vérifier les sept couches du modèle OSI, donc si vous Telnet à une adresse, les sept couches fonctionnent correctement. Pour quitter une session Telnet active, tapez <code>exit</code> ou <code>disconnect</code>. Pour suspendre : <code>Ctrl + Shift + 6</code> puis <code>X</code>.</p>
+  </div>
+
+  <h4 class="sub-sub-title">ICMP – Internet Control Message Protocol</h4>
+  <p>ICMP est un protocole utilisé pour signaler des problèmes ou des problèmes avec des paquets IP sur un réseau. L'utilisation la plus courante d'ICMP consiste à envoyer des paquets <strong>ping</strong> pour tester la connectivité réseau des hôtes distants.</p>
+
+  <pre><span class="prompt">C:\&gt;</span>ping cisco.com
+
+Pinging cisco.com [198.133.219.25] with 32 bytes of data:
+<span class="ok">Reply from 198.133.219.25: bytes=32 time=460ms TTL=237
+Reply from 198.133.219.25: bytes=32 time=160ms TTL=237
+Reply from 198.133.219.25: bytes=32 time=160ms TTL=237
+Reply from 198.133.219.25: bytes=32 time=180ms TTL=237</span>
+
+Ping statistics for 198.133.219.25:
+    Packets: Sent = 4, Received = 4, Lost = 0 (0% loss)
+    Approximate round trip times in milli-seconds:
+    Minimum = 160ms, Maximum = 460ms, Average = 240ms</pre>
+
+  <p>Plusieurs notations représentent la réponse que le paquet ping reçoit :</p>
+  <table class="port-table">
+    <thead><tr><th>Symbole</th><th>Signification</th></tr></thead>
+    <tbody>
+      <tr><td>!</td><td>Un point d'exclamation par réponse</td></tr>
+      <tr><td>.</td><td>Une période pour chaque timeout</td></tr>
+      <tr><td>U</td><td>Message de destination inaccessible</td></tr>
+      <tr><td>N</td><td>Message réseau inaccessible</td></tr>
+      <tr><td>P</td><td>Message de protocole inaccessible</td></tr>
+      <tr><td>Q</td><td>Message d'extinction source</td></tr>
+      <tr><td>M</td><td>Impossible de fragmenter</td></tr>
+      <tr><td>?</td><td>Type de paquet inconnu</td></tr>
+    </tbody>
+  </table>
+
+  <h4 class="sub-sub-title">Traceroute</h4>
+  <p>Traceroute est une installation très largement utilisée qui peut tester la connectivité réseau. Traceroute suit les paquets IP de destination en envoyant des paquets UDP avec un petit champ TTL maximum, puis écoute une réponse ICMP dépassée de temps. Chaque saut est mesuré trois fois. Un astérisque <code>[*]</code> indique qu'un saut a dépassé sa limite de temps.</p>
+  <p>Les routeurs Cisco utilisent la commande <code>traceroute</code>, tandis que les PC Windows utilisent <code>tracert</code>.</p>
+
+  <p>Traceroute fonctionne en incrémentant séquentiellement le champ TTL des paquets UDP. Chaque paquet a une valeur TTL et chaque fois que le paquet atteint un saut, sa valeur TTL est diminuée de 1. Le premier paquet est envoyé avec TTL=1, qui atteint le routeur 1 et génère un message d'erreur «TTL dépassé en transit». Ensuite un deuxième paquet est envoyé avec TTL=2, et ainsi de suite jusqu'à ce que la destination soit atteinte.</p>
+
+  <table class="port-table">
+    <thead><tr><th>Symbole</th><th>Signification (Traceroute)</th></tr></thead>
+    <tbody>
+      <tr><td>...</td><td>Timeout</td></tr>
+      <tr><td>U</td><td>Message de port inaccessible</td></tr>
+      <tr><td>H</td><td>Message d'hôte inaccessible</td></tr>
+      <tr><td>P</td><td>Message de protocole inaccessible</td></tr>
+      <tr><td>N</td><td>Message réseau inaccessible</td></tr>
+      <tr><td>?</td><td>Type de paquet inconnu</td></tr>
+      <tr><td>Q</td><td>Extinction de la source reçue</td></tr>
+    </tbody>
+  </table>
+
+  <h4 class="sub-sub-title">ARP – Address Resolution Protocol</h4>
+  <p>ARP résout une adresse IP connue en une adresse MAC. Lorsqu'un hôte a besoin de transférer des données sur le réseau, il doit connaître l'adresse MAC de l'autre hôte. L'hôte vérifie son cache ARP et si l'adresse MAC n'y est pas, il envoie un message ARP Broadcast pour trouver l'hôte.</p>
+  <p class="fig-caption">Figure 1.18 – Un hôte diffuse pour l'adresse MAC d'un autre hôte</p>
+
+  <pre><span class="prompt">Router#</span>show arp
+Protocol  Address     Age (min)  Hardware Addr     Type  Interface
+Internet  192.168.1.1 -          0002.4A4C.6801    ARPA  FastEthernet0/0
+
+<span class="prompt">Router#</span>ping 192.168.1.2
+Type escape sequence to abort.
+Sending 5, 100-byte ICMP Echos to 192.168.1.2, timeout is 2 seconds:
+<span class="ok">.!!!!</span>  <span class="comment">← first packet fails due to ARP request</span>
+Success rate is 80 percent (4/5), round-trip min/avg/max = 31/31/31 ms</pre>
+
+  <div class="callout callout-info">
+    <div class="callout-label">Important</div>
+    <p>Les tables ARP sur les routeurs et les commutateurs sont vidées après un certain temps (quatre heures par défaut) pour conserver les ressources et empêcher les entrées inexactes.</p>
+  </div>
+
+  <h4 class="sub-sub-title">Proxy ARP</h4>
+  <p>Le proxy ARP (RFC 1027) permet aux hôtes sur un réseau Ethernet de communiquer avec des hôtes sur d'autres sous-réseaux ou réseaux, même s'ils n'ont aucune connaissance du routage. Si une diffusion ARP atteint un routeur, il ne la transmettra pas (par défaut). Mais s'il sait comment trouver l'hôte, il enverra sa propre adresse MAC à l'hôte, ce qui s'appelle proxy ARP.</p>
+  <p>Les adresses IP source et de destination ne changent jamais mais pour que le paquet soit transmis à une adresse de saut suivant, l'adresse MAC (dans la trame) change entre les périphériques.</p>
+  <pre><code>ip proxy-arp</code>    <span class="comment">← activé par défaut sur les routeurs Cisco</span></pre>
+
+  <h4 class="sub-sub-title">RARP – Reverse Address Resolution Protocol</h4>
+  <p>RARP mappe une adresse MAC connue à une adresse IP. Les hôtes tels que les postes de travail sans disque (clients légers) connaissent leur adresse MAC lorsqu'ils démarrent. Ils utilisent RARP pour découvrir leur adresse IP à partir d'un serveur sur le réseau.</p>
+
+  <h4 class="sub-sub-title">GARP – Gratuitous Address Resolution Protocol</h4>
+  <p>GARP est un paquet ARP spécial. Un hôte normal enverra toujours une demande GARP après que la liaison soit établie ou que l'interface soit activée. Une requête ARP gratuite est un paquet de requête ARP où le MAC source, l'IP source et les adresses IP de destination sont tous définis sur l'adresse IP de la machine émettant le paquet, et le MAC de destination est l'adresse de diffusion <code>FFFF:FFFF:FFFF</code>. GARP est utilisé lorsqu'un changement d'état se produit dans les protocoles FHRP (par exemple, HSRP).</p>
+
+  <h4 class="sub-sub-title">SNMP – Simple Network Management Protocol</h4>
+  <p>SNMP est utilisé pour les services de gestion de réseau. Un système de gestion SNMP permet aux périphériques réseau d'envoyer des messages appelés <strong>interruptions</strong> à une station de gestion. Cela informe l'administrateur réseau de tout défaut sur le réseau (comme des interfaces défectueuses), d'une utilisation élevée du processeur sur les serveurs, etc. SNMP utilise les ports UDP 161 et 162.</p>
+  <pre><span class="prompt">Router#</span>debug snmp     <span class="comment">← déboguer le trafic SNMP</span></pre>
+
+  <h4 class="sub-sub-title">HTTPS – Hyper Text Transfer Protocol Secure</h4>
+  <p>TLS, et l'ancien protocole SSL, est utilisé pour la communication sécurisée sur Internet, effectuée au moyen de la cryptographie. Vous les trouverez également utilisés pour le courrier électronique et la voix sur IP (VoIP), ainsi que lors de la navigation sur des sites commençant par <code>https://</code>. HTTP avec TLS/SSL (HTTPS) utilise le port 443.</p>
+
+  <h4 class="sub-sub-title">Commande ipconfig</h4>
+  <p>La commande <code>ipconfig</code> utilisée à une invite de commande Windows vous permet d'utiliser plusieurs commutateurs :</p>
+  <table class="show-table">
+    <thead><tr><th>Commande</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td>ipconfig /?</td><td>Afficher ce message d'aide</td></tr>
+      <tr><td>ipconfig /all</td><td>Afficher les informations de configuration complètes</td></tr>
+      <tr><td>ipconfig /release</td><td>Libérer l'adresse IP de l'adaptateur spécifié</td></tr>
+      <tr><td>ipconfig /renew</td><td>Renouveler l'adresse IP de l'adaptateur spécifié</td></tr>
+      <tr><td>ipconfig /flushdns</td><td>Purger le cache du résolveur DNS</td></tr>
+      <tr><td>ipconfig /registerdns</td><td>Actualiser tous les baux DHCP et réenregistrer les noms DNS</td></tr>
+    </tbody>
+  </table>
+
+  <!-- ═══ CÂBLES ═══ -->
+  <h2 class="section-title"><span class="num">06</span> Câbles et supports</h2>
+
+  <p>Les problèmes de câblage et liés aux câbles feront partie de votre routine quotidienne en tant qu'ingénieur réseau. Vous aurez besoin de savoir quels câbles se branchent sur quels périphériques, les limitations de l'industrie et comment configurer l'équipement pour une utilisation avec le type de câble approprié.</p>
+
+  <h3 class="sub-title">Câbles LAN – Câbles Ethernet</h3>
+  <p>La plupart des problèmes de réseau liés aux câbles se produiront du côté du réseau local (LAN) plutôt que du côté du réseau étendu (WAN) en raison du volume élevé de câbles et de connecteurs et de la fréquence plus élevée de remise en place.</p>
+
+  <p>Le câble Ethernet standard actuel utilise toujours huit fils torsadés en paires pour éviter les interférences électromagnétiques (EMI), ainsi que la diaphonie, qui est un signal d'un fil débordant dans un câble voisin.</p>
+
+  <table class="eth-table">
+    <thead>
+      <tr><th>Vitesse</th><th>Nom</th><th>Nom IEEE</th><th>Standard IEEE</th><th>Câble / Longueur</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>10Mbps</td><td>Ethernet</td><td>10BASE-T</td><td>802.3</td><td>Cuivre / 100 m</td></tr>
+      <tr><td>100Mbps</td><td>FastEthernet</td><td>100BASE-T</td><td>802.3u</td><td>Cuivre / 100 m</td></tr>
+      <tr><td>1000Mbps</td><td>GigabitEthernet</td><td>1000BASE-LX</td><td>802.3z</td><td>Fibre / 5000 m</td></tr>
+      <tr><td>1000Mbps</td><td>GigabitEthernet</td><td>1000BASE-T</td><td>802.3ab</td><td>Cuivre / 100 m</td></tr>
+      <tr><td>10Gbps</td><td>TenGigabitEthernet</td><td>10GBASE-T</td><td>802.3an</td><td>Cuivre / 100 m</td></tr>
+    </tbody>
+  </table>
+  <p class="fig-caption">Table 1.6 – Normes Ethernet fréquentes</p>
+
+  <h3 class="sub-title">Duplex</h3>
+  <p>Lors de la première utilisation du réseau Ethernet, les données ne pouvaient passer sur le câble que dans une seule direction à la fois. Ce n'est plus un problème car un jeu de câbles différent est utilisé pour envoyer et recevoir des signaux.</p>
+  <ul class="layer-list">
+    <li><strong>Half duplex</strong> : les données ne peuvent passer que dans une seule direction à la fois</li>
+    <li><strong>Full duplex</strong> : les données peuvent passer dans les deux directions sur le câble en même temps (en utilisant des fils de rechange à l'intérieur du câble Ethernet)</li>
+  </ul>
+  <p>Tous les périphériques fonctionnent maintenant en duplex intégral, sauf configuration contraire.</p>
+
+<pre><span class="prompt">Switch#</span>show interface FastEthernet0/1
+FastEthernet0/1 is down, line protocol is down (disabled)
+Hardware is Lance, address is 0030.a388.8401
+BW 100000 Kbit, DLY 1000 usec,
+reliability 255/255, txload 1/255, rxload 1/255
+Encapsulation ARPA, Loopback not set
+Keepalive set (10 sec)
+<span class="warn">Half-duplex, 100Mb/s</span></pre>
+
+<pre><span class="prompt">Switch(config-if)#</span>duplex ?
+  auto  Enable AUTO duplex configuration
+  full  Force full duplex operation
+  half  Force half-duplex operation
+<span class="prompt">Switch(config-if)#</span>duplex full</pre>
+
+  <h3 class="sub-title">Vitesse</h3>
+  <p>Vous pouvez laisser la vitesse du port Ethernet sur vos routeurs ou commutateurs en tant que négociation automatique, ou vous pouvez les définir en dur sur 10 Mbps, 100 Mbps ou 1000 Mbps.</p>
+
+<pre><span class="prompt">Router(config-if)#</span>speed ?
+  10    Force 10 Mbps operation
+  100   Force 100 Mbps operation
+  1000  Force 1000 Mbps operation
+  auto  Enable AUTO speed configuration</pre>
+
+  <p>Les spécifications pour les câbles Ethernet par EIA/TIA dictent que l'extrémité de la présentation du câble doit être <strong>RJ45 mâle</strong>, ce qui vous permettra d'insérer le câble dans le port Ethernet de votre routeur/commutateur/PC.</p>
+  <p class="fig-caption">Figure 1.23 – RJ45 Terminaison Male / Figure 1.24 – RJ45 Terminaison Femelle</p>
+
+  <h3 class="sub-title">Types de câbles</h3>
+
+  <h4 class="sub-sub-title">Câbles droits</h4>
+  <p>Chaque câble Ethernet contient huit fils et chaque fil se connecte à une broche à l'extrémité. Si chaque broche à une extrémité correspond à l'autre côté, on parle alors de <strong>câble direct</strong>. Ces câbles peuvent être utilisés pour connecter un périphérique terminal à un port Ethernet sur un commutateur et un commutateur à un routeur.</p>
+
+  <h4 class="sub-sub-title">Câbles croisés</h4>
+  <p>En échangeant deux des fils du câble, il peut maintenant être utilisé pour connecter un PC à un PC ou un commutateur vers un commutateur. Le fil sur la broche 1 à une extrémité doit se connecter à la broche 3 à l'autre extrémité, et la broche 2 doit se connecter à la broche 6 à l'autre extrémité.</p>
+  <p class="fig-caption">Figure 1.27 – Broche 1 à broche 3 et broche 2 à broche 6</p>
+
+  <div class="callout callout-info">
+    <div class="callout-label">Auto-MDIX</div>
+    <p>Les ports Auto-MDIX sur les nouvelles interfaces réseau détectent si la connexion nécessite un croisement, et choisissent automatiquement la configuration MDI ou MDIX pour correspondre correctement à l'autre extrémité de la liaison.</p>
+  </div>
+
+  <h4 class="sub-sub-title">Câbles de retournement / console</h4>
+  <p>Tous les routeurs et commutateurs Cisco ont des ports physiques appelés <strong>ports de console</strong> auxquels se connecter pour la configuration initiale et la reprise après sinistre. Pour vous connecter à ce port, vous avez besoin d'un type spécial de câble appelé <strong>câble inverseur ou câble de console</strong>. Il peut parfois être qualifié de câble plat.</p>
+
+  <p>Un câble de retournement permute toutes les broches : la broche 1 à une extrémité va à la broche 8 à l'autre extrémité, la broche 2 à la broche 7, et ainsi de suite.</p>
+  <p class="fig-caption">Figure 1.28 – Un câble de retournement typique / Figure 1.29 – Toutes les broches échangées</p>
+
+  <p>Les câbles de retournement ont généralement une connexion RJ45 à une extrémité et une connexion en forme de D à 9 broches à l'autre extrémité (port COM). Vous pouvez désormais acheter un câble de conversion DB9 vers USB dans de nombreux magasins. Cisco a commencé à installer des ports mini-USB (en plus des ports RJ45) sur leurs appareils pour permettre la connectivité du port de console. Si les deux câbles de console sont branchés en même temps, le câble mini-USB a la priorité.</p>
+
+  <h3 class="sub-title">Câbles WAN</h3>
+  <p>Utilisés pour les connexions de réseau étendu, les câbles série peuvent se présenter sous plusieurs formes, tailles et spécifications, en fonction de l'interface du routeur et du type de connexion. Le RNIS utilise des câbles différents de ceux du Frame Relay ou de l'ADSL.</p>
+
+  <p>Un type commun de câble WAN que vous utiliserez, en particulier si vous avez un réseau domestique sur lequel vous entraîner, est un <strong>DB60</strong>. Pour ce type de câble, vous aurez un équipement d'équipement terminal de données (<strong>DTE</strong>), qui se branche sur l'équipement client, et un équipement d'équipement de communication de données (<strong>DCE</strong>), qui détermine la vitesse de la connexion du FAI.</p>
+  <p class="fig-caption">Figure 1.33 – Un Cable DB60 / Figure 1.34 – L'interface série DB60 sur une carte WIC-1T</p>
+
+  <p>Il existe un autre type connu sous le nom de <strong>câble série intelligent</strong>. La carte WIC série intelligente (WIC-2T) vous offre deux connexions pour un emplacement sur le routeur, par opposition à une seule connexion que vous obtiendriez avec une carte WIC-1T standard. Chaque connexion série peut utiliser un type d'encapsulation différent, tel que PPP pour l'un et Frame Relay pour l'autre.</p>
+
+  <div class="callout callout-warn">
+    <div class="callout-label">Important – DCE/DTE</div>
+    <p>La chose la plus importante à retenir à propos des câbles DCE et DTE est que vous devez appliquer une <strong>fréquence d'horloge</strong> à l'extrémité DCE pour que la ligne monte.</p>
+  </div>
+
+<pre><span class="prompt">Router#</span>show controllers s0/1/0
+Interface Serial0/1/0
+Hardware is PowerQUICC MPC860
+<span class="ok">DCE V.35, no clock</span>
+
+<span class="prompt">Router(config-if)#</span>clock rate ?
+Speed (bits per second)
+  1200
+  2400
+  4800
+  9600
+  19200
+  38400
+  56000
+  64000
+  ...</pre>
+
+  <!-- ═══ CONNEXION AU ROUTEUR ═══ -->
+  <h2 class="section-title"><span class="num">07</span> Connexion à un routeur</h2>
+
+  <p>La première fois que vous vous connectez à un routeur ou à un commutateur, cela peut sembler un peu intimidant. Une fois que vous avez connecté le câble, vous devrez utiliser un <strong>programme d'émulation de terminal</strong> sur votre PC ou ordinateur portable. Cela vous permettra de voir la sortie du routeur et de saisir les commandes de configuration.</p>
+
+  <p>Pour l'instant, vous pouvez vous en tenir à <strong>PuTTY</strong>, qui est très largement utilisé. Vous pouvez télécharger PuTTY sur <code>www.putty.org</code>. Une connexion à l'ancienne utilisant le port COM sur un PC utilise presque toujours un port logique étiqueté COM1 ou COM2.</p>
+
+  <p>Si vous utilisez HyperTerminal, vous devrez sélectionner les paramètres de connexion suivants :</p>
+  <table class="port-table">
+    <thead><tr><th>Paramètre</th><th>Valeur</th></tr></thead>
+    <tbody>
+      <tr><td>Bits per second</td><td>9600</td></tr>
+      <tr><td>Data bits</td><td>8</td></tr>
+      <tr><td>Parity</td><td>None</td></tr>
+      <tr><td>Stop bits</td><td>1</td></tr>
+      <tr><td>Flow control</td><td>None</td></tr>
+    </tbody>
+  </table>
+
+  <p>Lorsque vous allumez le routeur, si vous avez sélectionné le bon port COM ET branché le câble de renversement dans le port de console, vous devriez voir le texte de démarrage du routeur. Si vous ne voyez aucun texte, appuyez plusieurs fois sur la touche Entrée, puis vérifiez vos paramètres.</p>
+
+  <p>Le routeur peut vous demander si vous souhaitez entrer en mode de configuration initiale. Tapez toujours <strong>«n» ou «non»</strong> :</p>
+
+<pre>Would you like to enter the initial configuration dialog? [yes/no]: <span class="warn">no</span>
+
+Press RETURN to get started!
+
+<span class="ok">Router&gt;</span></pre>
+
+  <h3 class="sub-title">Modes du routeur</h3>
+  <p>Afin de réussir l'examen CCNA, vous devrez comprendre à partir de quelle invite de routeur vous devez démarrer pour effectuer diverses actions. Assurez-vous que vous êtes dans le bon mode !</p>
+
+  <div class="mode-card">
+    <h4>Mode utilisateur</h4>
+    <p>Le premier mode présenté au démarrage du routeur. A un ensemble très limité de commandes, utile pour examiner les éléments de base du routeur.</p>
+    <pre style="margin:.6rem 0 0; font-size:.78rem;">Router&gt;</pre>
+  </div>
+
+  <div class="mode-card">
+    <h4>Mode privilégié</h4>
+    <p>La saisie d'<code>enable</code> à l'invite de l'utilisateur vous amène au mode privilégié. Pour revenir en mode utilisateur, tapez <code>disable</code>. Pour quitter complètement, tapez <code>logout</code> ou <code>exit</code>. Ce mode permet d'examiner la configuration complète du routeur, les statistiques et d'utiliser les commandes <code>show</code> et <code>debug</code>.</p>
+    <pre style="margin:.6rem 0 0; font-size:.78rem;">Router&gt;enable
+Router#
+Router#disable
+Router&gt;</pre>
+  </div>
+
+  <div class="mode-card">
+    <h4>Mode de Configuration Globale</h4>
+    <p>Pour configurer le routeur. Tapez <code>configure terminal</code> ou <code>config t</code> à l'invite du mode privilégié.</p>
+    <pre style="margin:.6rem 0 0; font-size:.78rem;">Router#config t
+Enter configuration commands, one per line. End with CNTL/Z.
+Router(config)#</pre>
+  </div>
+
+  <div class="mode-card">
+    <h4>Mode de Configuration d'Interface</h4>
+    <p>Permet d'entrer des commandes pour des interfaces individuelles du routeur (FastEthernet, Serial, etc.). Sur un nouveau routeur, toutes les interfaces seront éteintes par défaut.</p>
+    <pre style="margin:.6rem 0 0; font-size:.78rem;">Router(config)#interface Serial0
+Router(config-if)#</pre>
+  </div>
+
+  <div class="mode-card">
+    <h4>Mode de Configuration de Ligne</h4>
+    <p>Utilisé pour apporter des modifications à la console, au Telnet ou aux ports auxiliaires. Vous pouvez contrôler qui peut accéder au routeur via ces ports, ainsi que mettre des mots de passe.</p>
+    <pre style="margin:.6rem 0 0; font-size:.78rem;">Router(config)#line console 0
+Router(config-line)#</pre>
+  </div>
+
+  <div class="mode-card">
+    <h4>Mode de configuration du routeur</h4>
+    <p>Pour configurer un protocole de routage sur le routeur.</p>
+    <pre style="margin:.6rem 0 0; font-size:.78rem;">Router(config)#router rip
+Router(config-router)#</pre>
+  </div>
+
+  <div class="mode-card">
+    <h4>Mode de configuration VLAN</h4>
+    <p>S'applique principalement aux commutateurs. Vous passerez beaucoup de temps dans ce mode lors de la configuration des laboratoires de commutation.</p>
+    <pre style="margin:.6rem 0 0; font-size:.78rem;">Switch(config)#vlan 10
+Switch(config-vlan)#</pre>
+  </div>
+
+  <h3 class="sub-title">Configurer un routeur</h3>
+  <p>Il n'y a pas de menus disponibles sur un routeur et tout se fait via l'interface de ligne de commande (CLI). Il existe une aide contextuelle sous la forme du mot clé <code>?</code>. Si vous tapez un point d'interrogation à l'invite du routeur, une liste de toutes les commandes disponibles vous sera présentée.</p>
+
+<pre><span class="prompt">Router#</span>?
+Exec commands:
+  access-enable   Create a temporary Access-List entry
+  archive         manage archive files
+  cd              Change current directory
+  clear           Reset functions
+  configure       Enter configuration mode
+  copy            Copy from one file to another
+  debug           Debugging functions (see also 'undebug')
+  ...
+  -- More --</pre>
+
+  <p>Si vous commencez à taper une commande, tant qu'il n'y a qu'un seul mot disponible avec cette syntaxe, vous pouvez appuyer sur la touche <kbd>Tab</kbd> pour la terminer :</p>
+<pre><span class="prompt">Router#</span>copy ru    <span class="comment">← appuyer sur Tab</span>
+<span class="prompt">Router#</span>copy running-config</pre>
+
+  <h3 class="sub-title">Interfaces Loopback</h3>
+  <p>Une interface de bouclage est une interface virtuelle ou logique que vous configurez, mais elle n'existe pas physiquement. Le routeur vous permettra de pinger cette interface, ce qui vous évitera d'avoir à connecter des périphériques aux interfaces FastEthernet dans les laboratoires. Un avantage de l'utilisation des interfaces de bouclage est qu'elles restent toujours actives car elles sont logiques.</p>
+
+<pre><span class="prompt">Router(config)#</span>interface Loopback0
+<span class="prompt">Router(config-if)#</span>ip address 192.168.20.1 255.255.255.0
+<span class="prompt">Router(config-if)#</span>^Z
+
+<span class="prompt">Router#</span>show ip interface brief
+Interface    IP-Address      OK? Method Status   Protocol
+Loopback0    192.168.20.1    YES manual  <span class="ok">up       up</span></pre>
+
+  <h3 class="sub-title">Éditer les commandes</h3>
+  <table class="shortcut-table">
+    <tbody>
+      <tr><td>Ctrl+A</td><td>Passe au début de la ligne de commande</td></tr>
+      <tr><td>Ctrl+E</td><td>Passe à la fin de la ligne de commande</td></tr>
+      <tr><td>Ctrl+B</td><td>Recule d'un caractère</td></tr>
+      <tr><td>Ctrl+F</td><td>Avance d'un caractère</td></tr>
+      <tr><td>Esc+B</td><td>Recule d'un mot</td></tr>
+      <tr><td>Esc+F</td><td>Avance d'un mot</td></tr>
+      <tr><td>Ctrl+P ou flèche haut</td><td>Rappelle la commande précédente</td></tr>
+      <tr><td>Ctrl+N ou flèche bas</td><td>Rappelle la commande suivante</td></tr>
+      <tr><td>Ctrl+U</td><td>Supprime une ligne</td></tr>
+      <tr><td>Ctrl+W</td><td>Supprime un mot</td></tr>
+      <tr><td>Tab</td><td>Finit de taper une commande pour vous</td></tr>
+      <tr><td>show history</td><td>Affiche les 10 dernières commandes entrées par défaut</td></tr>
+      <tr><td>Backspace</td><td>Supprime un seul caractère</td></tr>
+    </tbody>
+  </table>
+
+  <h3 class="sub-title">Configuration d'une interface de routeur</h3>
+  <p>Les interfaces de routeur et de commutateur les plus couramment utilisées dans les réseaux d'entreprise modernes sont :</p>
+  <ul class="layer-list">
+    <li>100Mbps (communément appelé FastEthernet)</li>
+    <li>1Gbps (communément appelé GigabitEthernet)</li>
+    <li>10Gbps (communément appelé TenGigabitEthernet)</li>
+  </ul>
+
+  <p>La notation de l'interface est généralement composée de deux parties : le type d'interface et l'emplacement/module d'interface et le numéro de port. Exemples courants :</p>
+  <ul class="layer-list">
+    <li><code>Ethernet1/0</code> (slot 1, port 0)</li>
+    <li><code>FastEthernet0/3</code> (slot 0, port 3)</li>
+    <li><code>GigabitEthernet0/1/1</code> (module 0, slot 1, port 1)</li>
+  </ul>
+
+  <p>Pour qu'une interface de routeur ait des fonctionnalités de base, vous devez configurer : la vitesse, le duplex et l'adresse IP.</p>
+
+<pre><span class="prompt">Router#</span>configure terminal
+<span class="prompt">Router(config)#</span>interface FastEthernet0/0
+<span class="prompt">Router(config-if)#</span>no shutdown
+
+*Mar 1 00:32:05.199: %LINK-3-UPDOWN: Interface FastEthernet0/0, changed state to <span class="ok">up</span>
+*Mar 1 00:32:06.199: %LINEPROTO-5-UPDOWN: Line protocol on Interface FastEthernet0/0, changed state to <span class="ok">up</span></pre>
+
+  <h4 class="sub-sub-title">Configuration d'une adresse IP sur une interface</h4>
+<pre><span class="prompt">Router&gt;</span>enable
+<span class="prompt">Router#</span>config t
+<span class="prompt">Router(config)#</span>interface Serial0
+<span class="prompt">Router(config-if)#</span>ip address 192.168.1.1 255.255.255.0
+<span class="prompt">Router(config-if)#</span>no shutdown
+<span class="prompt">Router(config-if)#</span>exit
+<span class="prompt">Router(config)#</span>exit
+<span class="prompt">Router#</span></pre>
+
+  <p>Une description peut également être ajoutée à l'interface :</p>
+<pre><span class="prompt">RouterA(config)#</span>interface Serial0
+<span class="prompt">RouterA(config-if)#</span>description To_Headquarters
+<span class="prompt">RouterA(config-if)#</span>^Z</pre>
+
+  <h3 class="sub-title">Commandes d'affichage</h3>
+
+  <table class="show-table">
+    <thead><tr><th>Commande</th><th>Résultat</th></tr></thead>
+    <tbody>
+      <tr><td>show running-configuration</td><td>Affiche la configuration en DRAM</td></tr>
+      <tr><td>show startup-configuration</td><td>Affiche la configuration dans la NVRAM</td></tr>
+      <tr><td>show flash:</td><td>Montre quel IOS est en flash</td></tr>
+      <tr><td>show ip interface brief</td><td>Affiche un bref résumé de toutes les interfaces</td></tr>
+      <tr><td>show interface Serial0</td><td>Affiche les statistiques de l'interface série</td></tr>
+      <tr><td>show history</td><td>Affiche les 10 dernières commandes entrées</td></tr>
+    </tbody>
+  </table>
+
+  <h4 class="sub-sub-title">Show Version</h4>
+  <p>La commande <code>show version</code> fournit des informations utiles : type de routeur, version IOS, capacité mémoire, utilisation de la mémoire, type de CPU, capacité flash, et raison du dernier rechargement.</p>
+
+<pre><span class="prompt">Router#</span>show version
+Cisco 1841 (revision 5.0) with 114688K/16384K bytes of memory.
+Processor board ID FTX0947Z18E
+M860 processor: part number 0, mask 49
+2 FastEthernet/IEEE 802.3 interface(s)
+2 Low-speed Serial(sync/async) network interface(s)
+191K bytes of NVRAM.
+63488K bytes of ATA CompactFlash (Read/Write)
+Configuration register is 0x2102</pre>
+
+  <h4 class="sub-sub-title">Show IP Interface Brief</h4>
+  <p>Répertorie les interfaces du routeur et leur état (nom, adresse IP, statut du lien, état du protocole).</p>
+
+<pre><span class="prompt">Router#</span>show ip interface brief
+Interface         IP-Address     OK? Method  Status                Protocol
+FastEthernet0/0   unassigned     YES unset   administratively down down
+FastEthernet0/1   unassigned     YES unset   administratively down down
+Serial0/0/0       unassigned     YES unset   administratively down down</pre>
+
+  <h4 class="sub-sub-title">Show IP Route</h4>
+  <p>Fournit des informations détaillées sur les capacités de routage du périphérique. Répertorie tous les réseaux que le routeur peut atteindre et des informations sur la façon dont ils peuvent être atteints.</p>
+
+<pre><span class="prompt">R1#</span>show ip route
+Codes: C - connected, S - static, R - RIP, M - mobile, B - BGP
+       D - EIGRP, EX - EIGRP external, O - OSPF ...
+
+<span class="ok">R</span>  80.1.1.0/24 [120/1] via 10.1.1.2, 00:00:04, Ethernet0/0.1
+<span class="ok">D</span>  80.0.0.0/8 [90/281600] via 10.1.1.2, 00:02:02, Ethernet0/0.1
+<span class="ok">O E2</span> 80.1.0.0/16 [110/20] via 10.1.1.2, 00:00:14, Ethernet0/0.1</pre>
+
+  <h4 class="sub-sub-title">Augmenter le tampon d'historique</h4>
+<pre><span class="prompt">Router#</span>terminal history size 20</pre>
+
+  <hr class="divider">
+
+  <!-- ═══ QUESTIONS ═══ -->
+  <div class="qa-section">
+    <h2>Questions du jour 1</h2>
+
+    <h3>Questions sur le modèle OSI / TCP</h3>
+    <div class="q-item"><span class="q-num">1</span>Nommez chaque couche du modèle OSI, de la couche 7 à la couche 1.</div>
+    <div class="q-item"><span class="q-num">2</span>Le rôle de la couche de session est de _____, _____, et _____ sessions ou dialogues entre appareils.</div>
+    <div class="q-item"><span class="q-num">3</span>Quelles sont les trois méthodes utilisées pour contrôler le flux de données au niveau de la couche 4 ?</div>
+    <div class="q-item"><span class="q-num">4</span>La couche de transport comprend plusieurs protocoles, et les plus connus sont _____ et _____.</div>
+    <div class="q-item"><span class="q-num">5</span>Pourquoi UDP est-il utilisé si TCP/IP offre une livraison garantie ?</div>
+    <div class="q-item"><span class="q-num">6</span>À quoi correspondent les données au niveau de chaque couche OSI ?</div>
+    <div class="q-item"><span class="q-num">7</span>Afin de s'interfacer avec les niveaux supérieur et inférieur, la couche de liaison de données est en outre subdivisée en deux sous-couches ?</div>
+    <div class="q-item"><span class="q-num">8</span>Quelles sont les cinq couches TCP/IP de haut en bas ?</div>
+    <div class="q-item"><span class="q-num">9</span>Comment le modèle TCP/IP correspond-il au modèle OSI ?</div>
+    <div class="q-item"><span class="q-num">10</span>Les adresses de couche 2 sont également appelées adresses _____.</div>
+    <div class="q-item"><span class="q-num">11</span>L'utilisation d'un commutateur vous permettra de diviser votre réseau en sections plus petites et plus faciles à gérer, appelées _____.</div>
+
+    <h3>Questions sur les câbles</h3>
+    <div class="q-item"><span class="q-num">1</span>Le câble Ethernet standard actuel utilise toujours huit fils torsadés en paires pour éviter _____ et _____.</div>
+    <div class="q-item"><span class="q-num">2</span>_____ c'est quand un signal d'un fil Ethernet déborde dans un câble voisin.</div>
+    <div class="q-item"><span class="q-num">3</span>Quelle commande définirait la vitesse de l'interface du routeur FastEthernet sur 10 Mbps ?</div>
+    <div class="q-item"><span class="q-num">4</span>Sur un câble croisé, le fil sur la broche 1 à une extrémité doit se connecter à la broche _____ à l'autre extrémité et la broche 2 doit se connecter à la broche _____.</div>
+    <div class="q-item"><span class="q-num">5</span>Quel câble utiliseriez-vous pour connecter une interface Ethernet de routeur à un PC ?</div>
+    <div class="q-item"><span class="q-num">6</span>Vous pouvez voir un résumé des interfaces que vous avez sur votre routeur avec la commande <code>show _____</code>.</div>
+    <div class="q-item"><span class="q-num">7</span>Le mode de configuration de ligne vous permet de configurer les ports _____.</div>
+    <div class="q-item"><span class="q-num">8</span>Une interface de bouclage est une interface _____ ou _____ que vous configurez.</div>
+    <div class="q-item"><span class="q-num">9</span>Le raccourci clavier <code>Ctrl+A</code> fait quoi ?</div>
+    <div class="q-item"><span class="q-num">10</span>Le raccourci clavier _____ fait reculer le curseur d'un mot.</div>
+    <div class="q-item"><span class="q-num">11</span>Par défaut, la commande _____ affiche les 10 dernières commandes entrées.</div>
+  </div>
+
+</div>
+
+<!-- ═══ FOOTER ═══ -->
+<footer class="course-footer">
+  <p>Si tu es arrivé jusqu'ici je te félicite car tu fais partie de l'Elite qui se démarque et veut vraiment évoluer dans sa carrière en réussissant une certification CCNA.</p>
+  <p>C'est essentiel et c'est important de se démarquer de nos jours dans le monde professionnel.</p>
+  <p>Pour obtenir les réponses à ces questions, n'hésite pas à m'écrire :</p>
+  <p><strong>WhatsApp :</strong> +237 691463364 &nbsp;|&nbsp; <strong>Email :</strong> ottou.abed@gmail.com</p>
+  <p style="margin-top:1.25rem; font-size:1rem; color:#f59e0b; font-family:'Fraunces', serif; font-style:italic;">"LE SAVOIR C'EST LE POUVOIR"</p>
+  <p style="margin-top:.3rem;">À très bientôt. <strong>Abed</strong></p>
+</footer>
+
+</body>
+</html>
