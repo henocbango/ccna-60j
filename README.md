@@ -26,13 +26,13 @@ ccna-60j/
 
 ## Programme
 
-| Module | Jours | Contenu |
-|--------|-------|---------|
-| 01 | 1–10 | Fondamentaux Réseau — OSI, TCP/IP, Câbles |
-| 02 | 11–22 | Routage IP — OSPF, EIGRP, RIP |
-| 03 | 23–38 | WAN & Technologies avancées |
-| 04 | 39–52 | Sécurité & Administration |
-| 05 | 53–60 | Révision & Examens blancs |
+| Module | Jours | Contenu                                   |
+| ------ | ----- | ----------------------------------------- |
+| 01     | 1–10  | Fondamentaux Réseau — OSI, TCP/IP, Câbles |
+| 02     | 11–22 | Routage IP — OSPF, EIGRP, RIP             |
+| 03     | 23–38 | WAN & Technologies avancées               |
+| 04     | 39–52 | Sécurité & Administration                 |
+| 05     | 53–60 | Révision & Examens blancs                 |
 
 ## Utilisation
 
@@ -48,7 +48,7 @@ Ou consultez directement via **GitHub Pages**.
 
 ## Contact
 
-- **WhatsApp** : +237 691 463 364  
+- **WhatsApp** : +237 691 463 364
 - **Email** : ottou.abed@gmail.com
 
 ## Licence
@@ -57,4 +57,4 @@ MIT — Contenu éducatif libre. Contributions bienvenues.
 
 ---
 
-*"LE SAVOIR C'EST LE POUVOIR"* — Abed
+_"LE SAVOIR C'EST LE POUVOIR"_ — Abed
